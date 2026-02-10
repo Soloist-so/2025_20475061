@@ -1,0 +1,5 @@
+show: display a commit and its changes
+log: show commit history
+checkout: switch branch/commit or restore files
+init: create a new repository
+reset: move HEAD/branch pointer or unstage changes
