@@ -6,6 +6,7 @@
 *.so
 *.class
 *.com
+*.zip
 
 # Build directories
 build/
@@ -16,9 +17,20 @@ obj/
 .vs/
 *.user
 *.suo
+*.sln
+*.slnx
+*.vcxproj
+*.vcxproj.filters
 
 # CMake (common)
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
 Makefile
+
+
+
+#packing folders
+exercise4_static/
+exercise5_dynamic/
+
