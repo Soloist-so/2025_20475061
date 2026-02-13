@@ -7,6 +7,10 @@
 *.class
 *.com
 *.zip
+*.lib
+*.exp
+
+
 
 # Build directories
 build/
