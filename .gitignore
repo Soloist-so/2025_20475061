@@ -33,6 +33,11 @@ cmake_install.cmake
 Makefile
 
 
+# Doxygen output
+html/
+latex/
+
+
 
 #packing folders
 exercise4_static/
