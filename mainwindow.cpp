@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     connect(this, &MainWindow::statusUpdateMessage,
             ui->statusbar, &QStatusBar::showMessage);
+    ui->treeView->addAction(ui->actionItem_Options);
     // Create / allocate the ModelPartList
     this->partList = new ModelPartList("Parts List");
     ui->treeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -117,5 +118,18 @@ void MainWindow::on_actionOpen_File_triggered()
 
     emit statusUpdateMessage("Selected file: " + fileName, 0);
 
+}
+
+
+void MainWindow::on_actionItem_Options_triggered()
+{
+    QModelIndex index = ui->treeView->currentIndex();
+
+    if (!index.isValid()) {
+        emit statusUpdateMessage("No item selected", 0);
+        return;
+    }
+
+    emit statusUpdateMessage("Options clicked for item", 0);
 }
 
