@@ -1,0 +1,20 @@
+# Build folders
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+
+# Visual Studio
+.vs/
+*.vcxproj*
+*.sln
+*.user
+
+# Qt
+*.pro.user
+
+# Compiled files
+*.exe
+*.obj
+*.dll
+*.pdb
