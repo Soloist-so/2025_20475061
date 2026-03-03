@@ -7,12 +7,15 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    connect(this, &MainWindow::statusUpdateMessage,
+            ui->statusbar, &QStatusBar::showMessage);
     // Create / allocate the ModelPartList
     this->partList = new ModelPartList("Parts List");
     ui->treeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
     // Link it to the tree view in the GUI
     ui->treeView->setModel(this->partList);
-
+    connect(ui->treeView, &QTreeView::clicked,
+            this, &MainWindow::handleTreeClicked);
     // Build demo tree
     ModelPart* rootItem = this->partList->getRootItem();
 
@@ -49,3 +52,13 @@ void MainWindow::handleButton2()
     emit statusUpdateMessage(QString("Button 2 was clicked"), 0);
 }
 
+void MainWindow::handleTreeClicked(const QModelIndex &index)
+{
+    if (!index.isValid()) return;
+
+    auto* selectedPart = static_cast<ModelPart*>(index.internalPointer());
+    if (!selectedPart) return;
+
+    QString text = selectedPart->data(0).toString();
+    emit statusUpdateMessage(QString("The selected item is: ") + text, 0);
+}
