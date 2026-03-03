@@ -23,7 +23,9 @@ class ModelPart;
 
 class ModelPartList : public QAbstractItemModel {
     Q_OBJECT        /**< A special Qt tag used to indicate that this is a special Qt class that might require preprocessing before compiling. */
+
 public:
+    bool setData(const QModelIndex& index, const QVariant& value, int role) override;
     /** Constructor
       *  Arguments are standard arguments for this type of class but are not used in this example.
       * @param data is not used
@@ -98,6 +100,7 @@ public:
 
 private:
     ModelPart *rootItem;    /**< This is a pointer to the item at the base of the tree */
+
 };
 #endif
 

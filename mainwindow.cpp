@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include <QFileDialog>
+#include "optiondialog.h"
+#include "ModelPart.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -16,7 +18,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->treeView->setModel(this->partList);
     connect(ui->treeView, &QTreeView::clicked,
             this, &MainWindow::handleTreeClicked);
-    // Build demo tree
+
+    connect(ui->pushButton_2, &QPushButton::released,
+            this, &MainWindow::handleButton2);// Build demo tree
     ModelPart* rootItem = this->partList->getRootItem();
 
     // Add 3 top-level items
@@ -24,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
         QString name = QString("TopLevel %1").arg(i);
         QString visible("true");
 
-        ModelPart* childItem = new ModelPart({ name, visible });
+        ModelPart* childItem = new ModelPart({ name, visible, QVariant() });
         rootItem->appendChild(childItem);
 
         // Add 5 sub-items
@@ -32,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
             QString childName = QString("Item %1,%2").arg(i).arg(j);
             QString childVisible("true");
 
-            ModelPart* childChildItem = new ModelPart({ childName, childVisible });
+            ModelPart* childChildItem = new ModelPart({ childName, childVisible, QVariant() });
             childItem->appendChild(childChildItem);
         }
     }
@@ -49,9 +53,45 @@ void MainWindow::handleButton1()
 
 void MainWindow::handleButton2()
 {
-    emit statusUpdateMessage(QString("Button 2 was clicked"), 0);
-}
+    QModelIndex index = ui->treeView->currentIndex();
+    if (!index.isValid()) {
+        emit statusUpdateMessage("No item selected", 0);
+        return;
+    }
 
+    ModelPart* selectedPart =
+        static_cast<ModelPart*>(index.internalPointer());
+    if (!selectedPart) return;
+
+    OptionDialog dialog(this);
+
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        selectedPart->set(0, dialog.getName());
+        selectedPart->set(1, dialog.getVisible() ? "true" : "false");
+        selectedPart->setVisible(dialog.getVisible());
+
+        QColor c = dialog.getColour();
+        selectedPart->setColour((unsigned char)c.red(),
+                                (unsigned char)c.green(),
+                                (unsigned char)c.blue());
+
+        emit statusUpdateMessage("ModelPart updated", 0);
+
+        // tell the view which cells changed
+        QModelIndex nameIdx = index.sibling(index.row(), 0);
+        QModelIndex visIdx  = index.sibling(index.row(), 1);
+        QModelIndex colIdx  = index.sibling(index.row(), 2);
+
+        emit partList->dataChanged(nameIdx, nameIdx, {Qt::DisplayRole, Qt::EditRole});
+        emit partList->dataChanged(visIdx,  visIdx,  {Qt::CheckStateRole, Qt::DisplayRole});
+        emit partList->dataChanged(colIdx,  colIdx,  {Qt::DecorationRole});
+    }
+    else
+    {
+        emit statusUpdateMessage("Dialog rejected", 0);
+    }
+}
 void MainWindow::handleTreeClicked(const QModelIndex &index)
 {
     if (!index.isValid()) return;

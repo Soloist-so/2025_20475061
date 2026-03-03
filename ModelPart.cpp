@@ -18,12 +18,15 @@
 
 
 
-ModelPart::ModelPart(const QList<QVariant>& data, ModelPart* parent )
-    : m_itemData(data), m_parentItem(parent) {
-
-    /* You probably want to give the item a default colour */
+ModelPart::ModelPart(const QList<QVariant>& data, ModelPart* parent)
+    : m_itemData(data), m_parentItem(parent)
+{
+    // default values
+    isVisible = true;
+    colourR = 0;
+    colourG = 0;
+    colourB = 0;
 }
-
 
 ModelPart::~ModelPart() {
     qDeleteAll(m_childItems);
@@ -95,47 +98,6 @@ int ModelPart::row() const {
     return 0;
 }
 
-void ModelPart::setColour(const unsigned char R, const unsigned char G, const unsigned char B) {
-    /* This is a placeholder function that you will need to modify if you want to use it */
-    
-    /* As the name suggests ... */
-}
-
-unsigned char ModelPart::getColourR() {
-    /* This is a placeholder function that you will need to modify if you want to use it */
-    
-    /* As the name suggests ... */
-    return 0;   // needs updating
-}
-
-unsigned char ModelPart::getColourG() {
-    /* This is a placeholder function that you will need to modify if you want to use it */
-    
-    /* As the name suggests ... */
-    return 0;   // needs updating
-}
-
-
-unsigned char ModelPart::getColourB() {
-   /* This is a placeholder function that you will need to modify if you want to use it */
-    
-    /* As the name suggests ... */
-    return 0;   // needs updating
-}
-
-
-void ModelPart::setVisible(bool isVisible) {
-    /* This is a placeholder function that you will need to modify if you want to use it */
-    
-    /* As the name suggests ... */
-}
-
-bool ModelPart::visible() {
-    /* This is a placeholder function that you will need to modify if you want to use it */
-    
-    /* As the name suggests ... */
-    return false;
-}
 
 void ModelPart::loadSTL( QString fileName ) {
     /* This is a placeholder function that you will need to modify if you want to use it */
@@ -184,3 +146,25 @@ void ModelPart::loadSTL( QString fileName ) {
     
 //}
 
+
+
+void ModelPart::setColour(const unsigned char R, const unsigned char G, const unsigned char B)
+{
+    colourR = R;
+    colourG = G;
+    colourB = B;
+}
+
+unsigned char ModelPart::getColourR() { return colourR; }
+unsigned char ModelPart::getColourG() { return colourG; }
+unsigned char ModelPart::getColourB() { return colourB; }
+
+void ModelPart::setVisible(bool v)
+{
+    isVisible = v;
+}
+
+bool ModelPart::visible()
+{
+    return isVisible;
+}

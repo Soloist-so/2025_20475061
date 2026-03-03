@@ -13,7 +13,7 @@
 #include <QString>
 #include <QList>
 #include <QVariant>
-
+#include <QColor>
 /* VTK headers - will be needed when VTK used in next worksheet,
  * commented out for now
  *
@@ -129,7 +129,11 @@ public:
 private:
     QList<ModelPart*>                           m_childItems;       /**< List (array) of child items */
     QList<QVariant>                             m_itemData;         /**< List (array of column data for item */
-    ModelPart*                                  m_parentItem;       /**< Pointer to parent */
+    ModelPart*                                  m_parentItem;    /**< Pointer to parent */
+    unsigned char colourR = 0;
+    unsigned char colourG = 0;
+    unsigned char colourB = 0;
+
 
     /* These are some typical properties that I think the part will need, you might
      * want to add you own.
@@ -143,6 +147,8 @@ private:
     //vtkSmartPointer<vtkMapper>                  mapper;             /**< Mapper for rendering */
     //vtkSmartPointer<vtkActor>                   actor;              /**< Actor for rendering */
     //vtkColor3<unsigned char>                    colour;             /**< User defineable colour */
+
+
 };  
 
 

@@ -1,4 +1,4 @@
-/**     @file ModelPartList.h
+/**     @fileModelPartList.h
   *
   *     EEEE2076 - Software Engineering & VR Project
   *
@@ -9,15 +9,47 @@
 
 #include "ModelPartList.h"
 #include "ModelPart.h"
+#include <QIcon>
+#include <QPixmap>
+#include <QColor>
 
 ModelPartList::ModelPartList( const QString& data, QObject* parent ) : QAbstractItemModel(parent) {
     /* Have option to specify number of visible properties for each item in tree - the root item
      * acts as the column headers
      */
-    rootItem = new ModelPart( { tr("Part"), tr("Visible?") } );
+    rootItem = new ModelPart({ tr("Part"), tr("Visible?"), tr("Colour") });
 }
 
+QVariant ModelPartList::data(const QModelIndex& index, int role) const
+{
+    if (!index.isValid())
+        return QVariant();
 
+    ModelPart* item = static_cast<ModelPart*>(index.internalPointer());
+
+    // Colour square in column 2
+    if (role == Qt::DecorationRole && index.column() == 2) {
+        QColor c(item->getColourR(), item->getColourG(), item->getColourB());
+        QPixmap pix(16, 16);
+        pix.fill(c);
+        return QIcon(pix);
+    }
+
+    // Checkbox in column 1
+    if (role == Qt::CheckStateRole && index.column() == 1) {
+        const bool vis = (item->data(1).toString().toLower() == "true");
+        return vis ? Qt::Checked : Qt::Unchecked;
+    }
+
+    // Display text
+    if (role == Qt::DisplayRole) {
+        if (index.column() == 1 || index.column() == 2)
+            return QVariant(); // no text for checkbox + colour columns
+        return item->data(index.column());
+    }
+
+    return QVariant();
+}
 
 ModelPartList::~ModelPartList() {
     delete rootItem;
@@ -31,33 +63,23 @@ int ModelPartList::columnCount( const QModelIndex& parent ) const {
 }
 
 
-QVariant ModelPartList::data( const QModelIndex& index, int role ) const {
-    /* If the item index isnt valid, return a new, empty QVariant (QVariant is generic datatype
-     * that could be any valid QT class) */
-    if( !index.isValid() )
-        return QVariant();
 
-    /* Role represents what this data will be used for, we only need deal with the case
-     * when QT is asking for data to create and display the treeview. Return a new,
-     * empty QVariant if any other request comes through. */
-    if (role != Qt::DisplayRole)
-        return QVariant();
-
-    /* Get a a pointer to the item referred to by the QModelIndex */
-    ModelPart* item = static_cast<ModelPart*>( index.internalPointer() );
-
-    /* Each item in the tree has a number of columns ("Part" and "Visible" in this 
-     * initial example) return the column requested by the QModelIndex */
-    return item->data( index.column() );
-}
-
-
-Qt::ItemFlags ModelPartList::flags( const QModelIndex& index ) const {
-    if( !index.isValid() )
+Qt::ItemFlags ModelPartList::flags(const QModelIndex& index) const
+{
+    if (!index.isValid())
         return Qt::NoItemFlags;
 
-    return QAbstractItemModel::flags( index );
+    Qt::ItemFlags f = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+
+    if (index.column() == 1)
+        f |= Qt::ItemIsUserCheckable;
+
+    if (index.column() == 0)
+        f |= Qt::ItemIsEditable;
+
+    return f;
 }
+
 
 
 QVariant ModelPartList::headerData( int section, Qt::Orientation orientation, int role ) const {
@@ -67,20 +89,19 @@ QVariant ModelPartList::headerData( int section, Qt::Orientation orientation, in
     return QVariant();
 }
 
-
-QModelIndex ModelPartList::index(int row, int column, const QModelIndex& parent) const {
+QModelIndex ModelPartList::index(int row, int column, const QModelIndex& parent) const
+{
     ModelPart* parentItem;
-    
-    if( !parent.isValid() || !hasIndex(row, column, parent) )
-        parentItem = rootItem;              // default to selecting root 
+
+    if (!parent.isValid() || !hasIndex(row, column, parent))
+        parentItem = rootItem;
     else
         parentItem = static_cast<ModelPart*>(parent.internalPointer());
 
     ModelPart* childItem = parentItem->child(row);
-    if( childItem )
+    if (childItem)
         return createIndex(row, column, childItem);
-    
-    
+
     return QModelIndex();
 }
 
@@ -142,5 +163,30 @@ QModelIndex ModelPartList::appendChild(QModelIndex& parent, const QList<QVariant
     emit layoutChanged();
 
     return child;
+}
+bool ModelPartList::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+    if (!index.isValid())
+        return false;
+
+    ModelPart* item = static_cast<ModelPart*>(index.internalPointer());
+
+    if (role == Qt::CheckStateRole && index.column() == 1) {
+        bool vis = (value.toInt() == Qt::Checked);
+
+        item->set(1, vis ? "true" : "false");
+        item->setVisible(vis);
+
+        emit dataChanged(index, index, {Qt::CheckStateRole, Qt::DisplayRole});
+        return true;
+    }
+
+    if (role == Qt::EditRole && index.column() == 0) {
+        item->set(0, value);
+        emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
+        return true;
+    }
+
+    return false;
 }
 
