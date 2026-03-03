@@ -62,3 +62,10 @@ void MainWindow::handleTreeClicked(const QModelIndex &index)
     QString text = selectedPart->data(0).toString();
     emit statusUpdateMessage(QString("The selected item is: ") + text, 0);
 }
+
+void MainWindow::on_actionOpen_File_triggered()
+{
+    emit statusUpdateMessage("Open File action triggered", 0);
+
+}
+

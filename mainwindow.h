@@ -25,6 +25,9 @@ public slots:
     void handleTreeClicked(const QModelIndex &index);
 signals:
     void statusUpdateMessage(const QString& message, int timeout);
+private slots:
+    void on_actionOpen_File_triggered();
+
 private:
     Ui::MainWindow *ui;
     ModelPartList* partList;
