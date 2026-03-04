@@ -135,14 +135,14 @@ void MainWindow::on_actionOpen_File_triggered()
     if (fileName.isEmpty())
         return;
 
-    // choose what you want to show in the tree:
+    // choose what to show in the tree:
     QFileInfo fi(fileName);
-    QString displayName = fi.fileName();   // or fi.baseName()
+    QString displayName = fi.fileName();
 
-    // rename the selected item (name column = 0)
+    // rename the selected item
     QModelIndex nameIndex = idx.sibling(idx.row(), 0);
 
-    // IMPORTANT: call setData on the MODEL, not on the view item
+
     if (!ui->treeView->model()->setData(nameIndex, displayName, Qt::EditRole)) {
         emit statusUpdateMessage("Failed to rename selected item.", 0);
         return;
