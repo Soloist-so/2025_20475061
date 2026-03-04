@@ -119,18 +119,36 @@ void MainWindow::handleTreeClicked(const QModelIndex &index)
 
 void MainWindow::on_actionOpen_File_triggered()
 {
+    // must have something selected
+    QModelIndex idx = ui->treeView->currentIndex();
+    if (!idx.isValid()) {
+        emit statusUpdateMessage("Select an item in the tree first.", 0);
+        return;
+    }
+
     QString fileName = QFileDialog::getOpenFileName(
         this,
         tr("Open File"),
         "C:\\",
         tr("STL Files (*.stl);;Text Files (*.txt);;All Files (*.*)")
         );
-
     if (fileName.isEmpty())
         return;
 
-    emit statusUpdateMessage("Selected file: " + fileName, 0);
+    // choose what you want to show in the tree:
+    QFileInfo fi(fileName);
+    QString displayName = fi.fileName();   // or fi.baseName()
 
+    // rename the selected item (name column = 0)
+    QModelIndex nameIndex = idx.sibling(idx.row(), 0);
+
+    // IMPORTANT: call setData on the MODEL, not on the view item
+    if (!ui->treeView->model()->setData(nameIndex, displayName, Qt::EditRole)) {
+        emit statusUpdateMessage("Failed to rename selected item.", 0);
+        return;
+    }
+
+    emit statusUpdateMessage("Selected file: " + fileName, 0);
 }
 
 
