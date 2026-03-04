@@ -73,7 +73,7 @@ public:
       */
     QVariant data(int column) const;
 
-
+    QColor getColour() const;
     /** Default function required by Qt to allow setting of part
       * properties within treeview.
       * @param column is the index of the property to set
@@ -97,9 +97,9 @@ public:
       */
     void setColour(const unsigned char R, const unsigned char G, const unsigned char B);
 
-    unsigned char getColourR();
-    unsigned char getColourG();
-    unsigned char getColourB();
+    unsigned char getColourR() const;
+    unsigned char getColourG() const;
+    unsigned char getColourB() const;
 
     /** Set visible flag
       * @param isVisible sets visible/non-visible

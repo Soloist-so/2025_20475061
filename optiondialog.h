@@ -14,7 +14,7 @@ class OptionDialog : public QDialog
 public:
     explicit OptionDialog(QWidget *parent = nullptr);
     ~OptionDialog();
-    // optiondialog.h
+    void setValues(const QString& name, const QColor& colour, bool visible);
     QString getName() const;
     QColor getColour() const;
     bool getVisible() const;

@@ -7,6 +7,8 @@ OptionDialog::OptionDialog(QWidget *parent)
     , ui(new Ui::OptionDialog)
 {
     ui->setupUi(this);
+    selectedColour = Qt::white;
+    ui->colourPreview->setStyleSheet("background-color: " + selectedColour.name());
     connect(ui->pickColourButton, &QPushButton::clicked,
             this, &OptionDialog::onPickColour);
 }
@@ -27,6 +29,16 @@ void OptionDialog::onPickColour()
             );
     }
 }
+
+void OptionDialog::setValues(const QString& name, const QColor& colour, bool visible)
+{
+    ui->lineEdit->setText(name);
+    ui->checkBox->setChecked(visible);
+
+    selectedColour = colour.isValid() ? colour : Qt::white;
+    ui->colourPreview->setStyleSheet("background-color: " + selectedColour.name());
+}
+
 QString OptionDialog::getName() const
 {
     return ui->lineEdit->text();

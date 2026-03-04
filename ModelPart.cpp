@@ -155,9 +155,9 @@ void ModelPart::setColour(const unsigned char R, const unsigned char G, const un
     colourB = B;
 }
 
-unsigned char ModelPart::getColourR() { return colourR; }
-unsigned char ModelPart::getColourG() { return colourG; }
-unsigned char ModelPart::getColourB() { return colourB; }
+unsigned char ModelPart::getColourR() const { return colourR; }
+unsigned char ModelPart::getColourG() const { return colourG; }
+unsigned char ModelPart::getColourB() const { return colourB; }
 
 void ModelPart::setVisible(bool v)
 {
@@ -167,4 +167,9 @@ void ModelPart::setVisible(bool v)
 bool ModelPart::visible()
 {
     return isVisible;
+}
+
+QColor ModelPart::getColour() const
+{
+    return QColor(getColourR(), getColourG(), getColourB());
 }

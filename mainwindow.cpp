@@ -64,8 +64,19 @@ void MainWindow::handleButton2()
         static_cast<ModelPart*>(index.internalPointer());
     if (!selectedPart) return;
 
-    OptionDialog dialog(this);
+    // Read current values from the selected item
+    const QString currentName = selectedPart->data(0).toString();
 
+    const QString visStr = selectedPart->data(1).toString().toLower();
+    const bool currentVisible = (visStr == "true");
+
+    QColor currentColour = selectedPart->getColour();   // <-- HERE
+
+    //  Create dialog and prefill it
+    OptionDialog dialog(this);
+    dialog.setValues(currentName, currentColour, currentVisible);   // <-- HERE
+
+    //Show dialog
     if (dialog.exec() == QDialog::Accepted)
     {
         selectedPart->set(0, dialog.getName());
@@ -73,26 +84,28 @@ void MainWindow::handleButton2()
         selectedPart->setVisible(dialog.getVisible());
 
         QColor c = dialog.getColour();
-        selectedPart->setColour((unsigned char)c.red(),
-                                (unsigned char)c.green(),
-                                (unsigned char)c.blue());
+        selectedPart->setColour(
+            (unsigned char)c.red(),
+            (unsigned char)c.green(),
+            (unsigned char)c.blue()
+            );
 
         emit statusUpdateMessage("ModelPart updated", 0);
 
-        // tell the view which cells changed
         QModelIndex nameIdx = index.sibling(index.row(), 0);
         QModelIndex visIdx  = index.sibling(index.row(), 1);
         QModelIndex colIdx  = index.sibling(index.row(), 2);
 
-        emit partList->dataChanged(nameIdx, nameIdx, {Qt::DisplayRole, Qt::EditRole});
-        emit partList->dataChanged(visIdx,  visIdx,  {Qt::CheckStateRole, Qt::DisplayRole});
-        emit partList->dataChanged(colIdx,  colIdx,  {Qt::DecorationRole});
+        emit partList->dataChanged(nameIdx, nameIdx, {Qt::DisplayRole});
+        emit partList->dataChanged(visIdx, visIdx, {Qt::CheckStateRole});
+        emit partList->dataChanged(colIdx, colIdx, {Qt::DecorationRole});
     }
     else
     {
         emit statusUpdateMessage("Dialog rejected", 0);
     }
 }
+
 void MainWindow::handleTreeClicked(const QModelIndex &index)
 {
     if (!index.isValid()) return;
@@ -123,13 +136,6 @@ void MainWindow::on_actionOpen_File_triggered()
 
 void MainWindow::on_actionItem_Options_triggered()
 {
-    QModelIndex index = ui->treeView->currentIndex();
+    handleButton2();
 
-    if (!index.isValid()) {
-        emit statusUpdateMessage("No item selected", 0);
-        return;
-    }
-
-    emit statusUpdateMessage("Options clicked for item", 0);
 }
-
