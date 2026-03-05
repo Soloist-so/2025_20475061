@@ -5,6 +5,10 @@
 #include "ModelPartList.h"
 #include "ModelPart.h"
 #include <QModelIndex>
+#include <vtkSmartPointer.h>
+
+class vtkRenderer;
+class vtkGenericOpenGLRenderWindow;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -33,5 +37,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     ModelPartList* partList;
+    vtkSmartPointer<vtkRenderer> renderer;
+    vtkSmartPointer<vtkGenericOpenGLRenderWindow> renderWindow;
 };
 #endif // MAINWINDOW_H
