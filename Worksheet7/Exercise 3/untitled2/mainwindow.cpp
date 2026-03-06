@@ -11,6 +11,7 @@
 #include <vtkProperty.h>
 #include <vtkCamera.h>
 #include <vtkNew.h>
+#include <vtkSTLReader.h>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -24,29 +25,6 @@ MainWindow::MainWindow(QWidget *parent)
     // Create renderer
     renderer = vtkSmartPointer<vtkRenderer>::New();
     renderWindow->AddRenderer(renderer);
-
-    // Create the objects (cylinder)
-    vtkNew<vtkCylinderSource> cylinder;
-    cylinder->SetResolution(8);
-
-    // Mapper
-    vtkNew<vtkPolyDataMapper> cylinderMapper;
-    cylinderMapper->SetInputConnection(cylinder->GetOutputPort());
-
-    // Actor
-    vtkNew<vtkActor> cylinderActor;
-    cylinderActor->SetMapper(cylinderMapper);
-    cylinderActor->GetProperty()->SetColor(1.0, 0.0, 0.35);
-    cylinderActor->RotateX(30.0);
-    cylinderActor->RotateY(45.0);
-
-    renderer->AddActor(cylinderActor);
-
-    // Camera setup
-    renderer->ResetCamera();
-    renderer->GetActiveCamera()->Azimuth(30);
-    renderer->GetActiveCamera()->Elevation(30);
-    renderer->ResetCameraClippingRange();
 
     // Render
     renderWindow->Render();
@@ -161,36 +139,37 @@ void MainWindow::handleTreeClicked(const QModelIndex &index)
 
 void MainWindow::on_actionOpen_File_triggered()
 {
-    // must have something selected
-    QModelIndex idx = ui->treeView->currentIndex();
-    if (!idx.isValid()) {
-        emit statusUpdateMessage("Select an item in the tree first.", 0);
-        return;
-    }
-
     QString fileName = QFileDialog::getOpenFileName(
         this,
         tr("Open File"),
         "C:\\",
-        tr("STL Files (*.stl);;Text Files (*.txt);;All Files (*.*)")
-        );
+        tr("STL Files (*.stl)")
+    );
+
     if (fileName.isEmpty())
         return;
 
-    // choose what to show in the tree:
-    QFileInfo fi(fileName);
-    QString displayName = fi.fileName();
+    QModelIndex parentIndex = ui->treeView->currentIndex();
+    if (!parentIndex.isValid())
+        parentIndex = QModelIndex();
 
-    // rename the selected item
-    QModelIndex nameIndex = idx.sibling(idx.row(), 0);
+    QString displayName = QFileInfo(fileName).fileName();
 
+    QList<QVariant> rowData;
+    rowData << displayName << "true" << QVariant();
 
-    if (!ui->treeView->model()->setData(nameIndex, displayName, Qt::EditRole)) {
-        emit statusUpdateMessage("Failed to rename selected item.", 0);
-        return;
+    QModelIndex newIndex = partList->appendChild(parentIndex, rowData);
+
+    ModelPart* newItem = static_cast<ModelPart*>(newIndex.internalPointer());
+
+    if (newItem)
+    {
+        newItem->loadSTL(fileName);
+        updateRender();
+
     }
 
-    emit statusUpdateMessage("Selected file: " + fileName, 0);
+    emit statusUpdateMessage("Loaded: " + fileName, 0);
 }
 
 
@@ -198,4 +177,43 @@ void MainWindow::on_actionItem_Options_triggered()
 {
     handleButton2();
 
+}
+void MainWindow::updateRender()
+{
+    renderer->RemoveAllViewProps();
+
+    // start from the root level
+    int rows = partList->rowCount(QModelIndex());
+    for (int i = 0; i < rows; ++i) {
+        updateRenderFromTree(partList->index(i, 0, QModelIndex()));
+    }
+
+    renderer->ResetCamera();
+    renderWindow->Render();
+}
+
+void MainWindow::updateRenderFromTree(const QModelIndex& index)
+{
+    if (!index.isValid())
+        return;
+
+    ModelPart* selectedPart =
+        static_cast<ModelPart*>(index.internalPointer());
+
+    if (selectedPart) {
+        // only add actor if it exists and the item is visible
+        vtkSmartPointer<vtkActor> actor = selectedPart->getActor();
+        if (actor && selectedPart->visible()) {
+            renderer->AddActor(actor);
+        }
+    }
+
+    // recurse through children
+    if (!partList->hasChildren(index) || (index.flags() & Qt::ItemNeverHasChildren))
+        return;
+
+    int rows = partList->rowCount(index);
+    for (int i = 0; i < rows; ++i) {
+        updateRenderFromTree(partList->index(i, 0, index));
+    }
 }

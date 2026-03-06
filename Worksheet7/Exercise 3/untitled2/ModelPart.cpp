@@ -8,13 +8,10 @@
   */
 
 #include "ModelPart.h"
-
-
-/* Commented out for now, will be uncommented later when you have
- * installed the VTK library
- */
-//#include <vtkSmartPointer.h>
-//#include <vtkDataSetMapper.h>
+#include <vtkSTLReader.h>
+#include <vtkDataSetMapper.h>   
+#include <vtkActor.h>
+#include <vtkProperty.h>
 
 
 
@@ -23,9 +20,9 @@ ModelPart::ModelPart(const QList<QVariant>& data, ModelPart* parent)
 {
     // default values
     isVisible = true;
-    colourR = 0;
-    colourG = 0;
-    colourB = 0;
+    colourR = 255;
+    colourG = 255;
+    colourB = 255;
 }
 
 ModelPart::~ModelPart() {
@@ -98,28 +95,54 @@ int ModelPart::row() const {
     return 0;
 }
 
-
-void ModelPart::loadSTL( QString fileName ) {
-    /* This is a placeholder function that you will need to modify if you want to use it */
     
-    /* 1. Use the vtkSTLReader class to load the STL file 
+    
+void ModelPart::loadSTL(QString fileName)
+{
+    /* This is a placeholder function that you will need to modify if you want to use it */
+
+    /* 1. Use the vtkSTLReader class to load the STL file
      *     https://vtk.org/doc/nightly/html/classvtkSTLReader.html
      */
 
-    /* 2. Initialise the part's vtkMapper */
-    
-    /* 3. Initialise the part's vtkActor and link to the mapper */
+     /* 2. Initialise the part's vtkMapper */
+
+     /* 3. Initialise the part's vtkActor and link to the mapper */
+      
+     // 1) Read STL
+    file = vtkSmartPointer<vtkSTLReader>::New();
+    file->SetFileName(fileName.toStdString().c_str());
+    file->Update();
+
+    // 2) Mapper (member is vtkMapper, so use vtkDataSetMapper and assign)
+    auto dsMapper = vtkSmartPointer<vtkDataSetMapper>::New();
+    dsMapper->SetInputConnection(file->GetOutputPort());
+    mapper = dsMapper;
+
+    // 3) Actor
+    actor = vtkSmartPointer<vtkActor>::New();
+    actor->SetMapper(mapper);
+
+    // Apply colour + visibility from your stored values
+    actor->SetVisibility(isVisible ? 1 : 0);
+    actor->GetProperty()->SetColor(
+        colourR / 255.0,
+        colourG / 255.0,
+        colourB / 255.0
+    );
+
 }
 
-//vtkSmartPointer<vtkActor> ModelPart::getActor() {
+vtkSmartPointer<vtkActor> ModelPart::getActor() {
     /* This is a placeholder function that you will need to modify if you want to use it */
     
     /* Needs to return a smart pointer to the vtkActor to allow
      * part to be rendered.
      */
-//}
+    return actor;
+}
 
-//vtkActor* ModelPart::getNewActor() {
+vtkActor* ModelPart::getNewActor() {
     /* This is a placeholder function that you will need to modify if you want to use it
      * 
      * The default mapper/actor combination can only be used to render the part in 
@@ -139,12 +162,12 @@ void ModelPart::loadSTL( QString fileName ) {
       *    See the vtkActor documentation, particularly the GetProperty() and SetProperty()
       *    functions.
       */
-    
+    return nullptr;
 
     /* The new vtkActor pointer must be returned here */
 //    return nullptr;
     
-//}
+}
 
 
 
